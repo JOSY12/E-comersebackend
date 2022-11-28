@@ -35,11 +35,7 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
            
         },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-           
-        },
+
         username: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -50,13 +46,23 @@ module.exports = (sequelize) => {
             defaultValue: false,
 
         },
+        
+        // city: {
+        //     type: DataTypes.STRING,
+        //     allowNull: true,
+        // },
+        // country: {
+        //     type: DataTypes.STRING,
+        //     allowNull: true
+        // },
         isBan: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         }
     }, {
-        timestamp: true,
+        timestamps: true,
         createdAt: 'unitedAt',
-        updatedAt: 'modifyAt'
+        updatedAt: 'modifyAt',
+        paranoid: true
     })
 }

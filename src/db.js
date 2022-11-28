@@ -2,18 +2,36 @@ require('dotenv').config();
 const { Sequelize } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
+const Knex = require('knex')
 const {
-  DATABASE_URL
+  DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DATABASE_URL, NODE_ENV
 } = process.env;
 
-const sequelize = new Sequelize(DATABASE_URL, {
+
+
+
+const sequelize = NODE_ENV === 'production' ? 
+  new Sequelize({
+  protocol: 'postgres',
+  dialect: 'postgres',
+  username: DB_USER, 
+  password: DB_PASSWORD,
+  host: DB_HOST,
+  database: DB_NAME,
+  dialectOptions: {
+    ssl: false
+  },
+
+}): new Sequelize(DATABASE_URL,{
   protocol: 'postgres',
   dialect: 'postgres',
   dialectOptions: {
     ssl: false
   },
-
 });
+
+
+
 const basename = path.basename(__filename);
 
 const modelDefiners = [];
@@ -34,7 +52,7 @@ sequelize.models = Object.fromEntries(capsEntries);
 
 // En sequelize.models están todos los modelos importados como propiedades
 // Para relacionarlos hacemos un destructuring
-const { Product, User, Photo, Review, Brand, Category, Address, Cart } = sequelize.models;
+const { Product, User, Photo, Review, Brand, Category, Address, Cart, Favorite} = sequelize.models;
 
 // Aca vendrian las relaciones
 // Product.hasMany(Reviews);
@@ -52,15 +70,19 @@ Product.belongsToMany(Category, ({ through: 'Product_Category' }))
 Category.belongsToMany(Product, ({through: 'Product_Category'}))
 
 User.hasOne(Address)
-Address.belongsTo(User)
-User.hasOne(Photo)
+Address.belongsTo(User, { targetKey: 'username', foreignKey: 'owner' })
+User.hasOne(Photo, {sourceKey: 'username', foreignKey:'user'})
 
-User.hasMany(Review)
-Review.belongsTo(User)
+User.hasMany(Review, {sourceKey: 'username', foreignKey: 'author'})
+Review.belongsTo(User, {targetKey: 'username', foreignKey: 'author'})
 
 User.hasOne(Cart)
 Cart.belongsTo(User)
+Cart.hasMany(Product)
 
+User.hasOne(Favorite)
+Favorite.belongsTo(User)
+Favorite.hasMany(Product)
 
 
 

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize')
 
 module.exports = (sequelize) => {
-    sequelize.define("cart", {
+    sequelize.define('favorite', {
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -9,10 +9,5 @@ module.exports = (sequelize) => {
             primaryKey: true,
             unique: true
         },
-        
-    }, {
-        timestamp: false,
-        createdAt: false,
-        updatedAt: false,
-    })
-}
+
+    })}
