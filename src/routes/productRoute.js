@@ -8,6 +8,7 @@ const {
   deleteProduct,
   updateProduct,
   addNewReview,
+  
 } = require("../controllers/productController.js");
 
 const productRoute = Router();

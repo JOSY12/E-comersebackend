@@ -1,5 +1,5 @@
 const { Router } = require('express')
-const {toggleProductAsFeatured, toggleAdmin, toggleBan} = require('../controllers/adminController')
+const { toggleProductAsFeatured, toggleAdmin, toggleBan } = require('../controllers/adminController')
 
 
 const adminRoute = Router()
