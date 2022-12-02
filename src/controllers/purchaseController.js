@@ -105,12 +105,12 @@ const buyproduct = async (req, res) => {
         },
       ],
       back_urls: {
-        success: `https://localhost:3000/ipayments/${id}`,
-        failure: "https://localhost:3000/paymentsfail",
-        pending: "https://localhost:3000/paymentspending",
+        success: `https://tpfront-production.up.railway.app/ipayments/${id}`,
+        failure: "https://tpfront-production.up.railway.app/paymentsfail",
+        pending: "https://tpfront-production.up.railway.app/paymentspending",
       },
       auto_return: "approved",
-      // notification_url: `https://localhost:3000/store/payments`,
+      notification_url: `https://tpfback-production.up.railway.app/store/payments`,
     };
 
     mercadopago.preferences.create(preference).then(function (response) {
@@ -172,12 +172,12 @@ const buyall = async (req, res) => {
         name: user.username,
       },
       back_urls: {
-        success: `https://localhost:3000/payments/${userId}`,
-        failure: "https://localhost:3000/paymentsfail",
-        pending: "https://localhost:3000/paymentspending",
+        success: `https://tpfront-production.up.railway.app/ipayments/${id}`,
+        failure: "https://tpfront-production.up.railway.app/paymentsfail",
+        pending: "https://tpfront-production.up.railway.app/paymentspending",
       },
       auto_return: "approved",
-      // notification_url: `https://localhost:3000/store/payments`,
+      notification_url: `https://tpfback-production.up.railway.app/store/payments`,
     };
 
     for (let e of cart) {
