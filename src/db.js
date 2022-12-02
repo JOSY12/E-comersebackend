@@ -5,26 +5,10 @@ const path = require("path");
 const Knex = require("knex");
 const { DATABASE_URL, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST } = process.env;
 
-const sequelize =
-  process.env.NODE_ENV === "production"
-    ? new Sequelize({
-        protocol: "postgres",
-        dialect: "postgres",
-        username: DB_USER,
-        password: DB_PASSWORD,
-        host: DB_HOST,
-        database: DB_NAME,
-        dialectOptions: {
-          ssl: false,
-        },
-      })
-    : new Sequelize(DATABASE_URL, {
-        protocol: "postgres",
-        dialect: "postgres",
-        dialectOptions: {
-          ssl: false,
-        },
-      });
+const sequelize = new Sequelize(DATABASE_URL, {
+  logging: false, // set to console.log to see the raw SQL queries
+  native: false, // lets Sequelize know we can use pg-native for ~30% more speed
+});
 
 const basename = path.basename(__filename);
 
