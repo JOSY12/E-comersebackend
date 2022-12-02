@@ -3,7 +3,7 @@ const { Sequelize } = require("sequelize");
 const fs = require("fs");
 const path = require("path");
 const Knex = require("knex");
-const { DATABASE_URL } = process.env;
+const { DATABASE_URL, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST } = process.env;
 
 const sequelize =
   process.env.NODE_ENV === "production"
