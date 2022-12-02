@@ -1,5 +1,5 @@
 
-const { User, Photo, conn, Favorite, Product, Brand } = require('../db.js')
+const { User, City, Photo, conn, Favorite, Product, Brand } = require('../db.js')
 const { Op } = require('sequelize')
 
 async function createNewUser(user)
@@ -116,6 +116,44 @@ async function updateUserData(req, res)
         res.status(200).send(updatedUser)
     } catch (error)
     {
+        res.status(500).json({
+            err: 'Algo salió terriblemente mal, estamos trabajando en ello',
+            description: error
+        })
+    }
+}
+
+const completeSignUp = async (req, res) =>
+{
+    let { userId } = req.params
+    let { phoneNumber, cityId } = req.body
+    const transaction = await conn.transaction();
+
+    try
+    {
+        let user = await User.findOne({
+            where: { id: userId },
+
+        });
+
+        let city = await City.findOne({
+            where: {
+                id: cityId
+            }
+        })
+
+        const updatedUser = await user.update({
+            phoneNumber
+        }, { transaction })
+
+        await user.setCityOfOrigin(city, { transaction });
+
+        await transaction.commit();
+
+        res.status(200).send(updatedUser)
+    } catch (error)
+    {
+        await transaction.rollback();
         res.status(500).json({
             err: 'Algo salió terriblemente mal, estamos trabajando en ello',
             description: error
@@ -339,5 +377,6 @@ module.exports = {
     getFavorites,
     addToFavorites,
     removeFromFavorites,
+    completeSignUp
 
 }

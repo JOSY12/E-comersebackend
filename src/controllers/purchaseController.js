@@ -96,13 +96,6 @@ const buyproduct = async (req, res) => {
     }
 
     let preference = {
-      // payer: {
-      //   phone: { area_code: '', number: '' },
-      //   address: { zip_code: '', street_name: '', street_number: null },
-      //   email: '',
-      //   identification: { number: '', type: '' },
-      //   name: '',
-      // },
       items: [
         {
           id: product.id,
@@ -111,19 +104,39 @@ const buyproduct = async (req, res) => {
           quantity: quantity,
         },
       ],
-      // notification_url: null,
       back_urls: {
-        // success: "http://localhost:3000/",
-        // failure: "http://www.failure.com",
-        // pending: "http://www.pending.com",
+        success: `https://localhost:3000/ipayments/${id}`,
+        failure: "https://localhost:3000/paymentsfail",
+        pending: "https://localhost:3000/paymentspending",
       },
+      auto_return: "approved",
+      // notification_url: `https://localhost:3000/store/payments`,
     };
 
     mercadopago.preferences.create(preference).then(function (response) {
-      global.id = response.body.id;
-      console.log(response.body);
       res.status(200).json(response.body.init_point);
+      console.log(response.body);
     });
+  } catch (error) {
+    res.status(500).json({
+      err: "Algo salió terriblemente mal, estamos trabajando en ello",
+      description: error,
+    });
+  }
+};
+
+const getpayinfo = async (req, res) => {
+  const { body, query } = req;
+  if (!body && !query) {
+    res.status(500).json({
+      err: "Algo salió terriblemente mal, estamos trabajando en ello",
+      description: error,
+    });
+  }
+
+  try {
+    const info = [...body, ...query];
+    res.status(200).json(info);
   } catch (error) {
     res.status(500).json({
       err: "Algo salió terriblemente mal, estamos trabajando en ello",
@@ -144,8 +157,27 @@ const buyall = async (req, res) => {
     });
     const cart = userCart.products;
 
+    const user = await User.findOne({
+      where: {
+        id: userId,
+      },
+      include: Cart,
+    });
+
     var preference = {
       items: [],
+
+      payer: {
+        email: user.email,
+        name: user.username,
+      },
+      back_urls: {
+        success: `https://localhost:3000/payments/${userId}`,
+        failure: "https://localhost:3000/paymentsfail",
+        pending: "https://localhost:3000/paymentspending",
+      },
+      auto_return: "approved",
+      // notification_url: `https://localhost:3000/store/payments`,
     };
 
     for (let e of cart) {
@@ -198,4 +230,5 @@ module.exports = {
   deleteAllCart,
   buyproduct,
   buyall,
+  getpayinfo,
 };

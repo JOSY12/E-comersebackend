@@ -93,7 +93,7 @@ Country.hasMany(City);
 City.belongsTo(Country);
 
 City.hasMany(User, { foreignKey: 'cityOfOriginId' });
-User.belongsTo(City, { as: 'cityOfOrigin', foreignKey: 'cityOfOriginId' });
+User.belongsTo(City, { as: 'CityOfOrigin', foreignKey: 'cityOfOriginId' });
 
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
