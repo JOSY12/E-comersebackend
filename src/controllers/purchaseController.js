@@ -110,11 +110,11 @@ const buyproduct = async (req, res) => {
         pending: "https://tpfront-production.up.railway.app/paymentspending",
       },
       auto_return: "approved",
-      notification_url: `https://tpfback-production.up.railway.app/store/payments`,
+      notification_url: `https://tpfback-production.up.railway.app/store/payments?source_news=webhooks`,
     };
 
     mercadopago.preferences.create(preference).then(function (response) {
-      res.status(200).json(response.body.init_point);
+      res.status(200).json([response.body, response.body.init_point]);
     });
   } catch (error) {
     res.status(500).json({
