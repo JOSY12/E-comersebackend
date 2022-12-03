@@ -129,7 +129,7 @@ const getpayinfo = async (req, res) => {
     res.status(200).send(req.body, req.params);
   } catch (error) {
     res.status(500).json({
-      err: `Algo salio mal en el envio de datos de pago datos: ${data}`,
+      err: `Algo salio mal en el envio de datos de pago datos `,
       description: error,
     });
   }
