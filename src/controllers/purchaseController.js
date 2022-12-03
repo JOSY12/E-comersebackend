@@ -128,10 +128,12 @@ const getpayinfo = async (req, res) => {
   const { body, query } = req;
 
   try {
-    res.status(200).send(body, query);
+    const data = [...body, ...query];
+
+    res.status(200).json(data);
   } catch (error) {
     res.status(500).json({
-      err: "Algo salió terriblemente mal, estamos trabajando en ello",
+      err: `Algo salio mal en el envio de datos de pago datos: ${data}`,
       description: error,
     });
   }
