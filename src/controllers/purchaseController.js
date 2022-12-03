@@ -128,7 +128,7 @@ const getpayinfo = async (req, res) => {
   const { body, query } = req;
 
   try {
-    res.status(200).json(body, query);
+    res.status(200).send(body, query);
   } catch (error) {
     res.status(500).json({
       err: "Algo salió terriblemente mal, estamos trabajando en ello",
