@@ -109,7 +109,7 @@ const buyproduct = async (req, res) => {
         failure: "https://tpfront-production.up.railway.app/paymentsfail",
         pending: "https://tpfront-production.up.railway.app/paymentspending",
       },
-      auto_return: "approved",
+
       notification_url: `https://tpfback-production.up.railway.app/store/payments`,
     };
 
@@ -126,8 +126,7 @@ const buyproduct = async (req, res) => {
 
 const getpayinfo = async (req, res) => {
   try {
-    console.log(req.body);
-    res.status(200).send(req.body);
+    res.status(200).send(req.body, req.params);
   } catch (error) {
     res.status(500).json({
       err: `Algo salio mal en el envio de datos de pago datos: ${data}`,
@@ -167,7 +166,7 @@ const buyall = async (req, res) => {
         failure: "https://tpfront-production.up.railway.app/paymentsfail",
         pending: "https://tpfront-production.up.railway.app/paymentspending",
       },
-      auto_return: "approved",
+
       notification_url: `https://tpfback-production.up.railway.app/store/payments`,
     };
 
