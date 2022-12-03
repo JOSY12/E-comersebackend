@@ -127,9 +127,7 @@ const buyproduct = async (req, res) => {
 
 const getpayinfo = async (req, res) => {
   try {
-    const data = [req.body, req.params];
-
-    res.status(200).json(data);
+    res.status(200).send(req.body);
   } catch (error) {
     res.status(500).json({
       err: `Algo salio mal en el envio de datos de pago datos `,
