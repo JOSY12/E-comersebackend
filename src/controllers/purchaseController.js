@@ -114,7 +114,7 @@ const buyproduct = async (req, res) => {
     };
 
     mercadopago.preferences.create(preference).then(function (response) {
-      res.status(200).json([response.body, response.body.init_point]);
+      res.status(200).json(response.body.init_point);
     });
   } catch (error) {
     res.status(500).json({
