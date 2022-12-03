@@ -111,7 +111,7 @@ const buyproduct = async (req, res) => {
         pending: "https://tpfront-production.up.railway.app/paymentspending",
       },
 
-      notification_url: `https://tpfback-production.up.railway.app/store/payments`,
+      notification_url: `https://tpfback-production.up.railway.app/store/payments?source_news=webhooks`,
     };
 
     mercadopago.preferences.create(preference).then(function (response) {
@@ -127,6 +127,7 @@ const buyproduct = async (req, res) => {
 
 const getpayinfo = async (req, res) => {
   try {
+    console.log([req.body, req.params]);
     res.status(200).send(req.body);
   } catch (error) {
     res.status(500).json({
@@ -168,7 +169,7 @@ const buyall = async (req, res) => {
         pending: "https://tpfront-production.up.railway.app/paymentspending",
       },
 
-      notification_url: `https://tpfback-production.up.railway.app/store/payments`,
+      notification_url: `https://tpfback-production.up.railway.app/store/payments?source_news=webhooks`,
     };
 
     for (let e of cart) {
