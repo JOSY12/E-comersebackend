@@ -125,14 +125,9 @@ const buyproduct = async (req, res) => {
 };
 
 const getpayinfo = async (req, res) => {
-  const { query, body } = req;
-
   try {
-    if (query) {
-      res.status(200).json(query);
-    }
-
-    res.status(200).json(body);
+    console.log(req.body);
+    res.status(200).send(req.body);
   } catch (error) {
     res.status(500).json({
       err: `Algo salio mal en el envio de datos de pago datos: ${data}`,
