@@ -1,5 +1,6 @@
 const { Cart, User, Product } = require("../db");
 const mercadopago = require("mercadopago");
+const { param } = require("../routes");
 
 const addProductToCart = async (req, res) => {
   let { userId, productId, qty } = req.body;
@@ -126,7 +127,9 @@ const buyproduct = async (req, res) => {
 
 const getpayinfo = async (req, res) => {
   try {
-    res.status(200).send(req.body, req.params);
+    const data = [req.body, req.params];
+
+    res.status(200).json(data);
   } catch (error) {
     res.status(500).json({
       err: `Algo salio mal en el envio de datos de pago datos `,
