@@ -115,7 +115,6 @@ const buyproduct = async (req, res) => {
 
     mercadopago.preferences.create(preference).then(function (response) {
       res.status(200).json(response.body.init_point);
-      console.log(response.body);
     });
   } catch (error) {
     res.status(500).json({
@@ -127,16 +126,9 @@ const buyproduct = async (req, res) => {
 
 const getpayinfo = async (req, res) => {
   const { body, query } = req;
-  if (!body && !query) {
-    res.status(500).json({
-      err: "Algo salió terriblemente mal, estamos trabajando en ello",
-      description: error,
-    });
-  }
 
   try {
-    const info = [...body, ...query];
-    res.status(200).json(info);
+    res.status(200).json(body, query);
   } catch (error) {
     res.status(500).json({
       err: "Algo salió terriblemente mal, estamos trabajando en ello",
@@ -172,7 +164,7 @@ const buyall = async (req, res) => {
         name: user.username,
       },
       back_urls: {
-        success: `https://tpfront-production.up.railway.app/ipayments/${id}`,
+        success: `https://tpfront-production.up.railway.app/payments/${id}`,
         failure: "https://tpfront-production.up.railway.app/paymentsfail",
         pending: "https://tpfront-production.up.railway.app/paymentspending",
       },
