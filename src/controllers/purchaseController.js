@@ -1,4 +1,4 @@
-const { Cart, User, Product } = require("../db");
+const { Cart, User, Product, Compra, Historial } = require("../db");
 const mercadopago = require("mercadopago");
 
 const addProductToCart = async (req, res) => {
@@ -31,6 +31,87 @@ const addProductToCart = async (req, res) => {
     res.status(200).json({
       msg: "Articulo agregado al carrito correctamente, ¡Genial! ¡Más consumismo!",
     });
+  } catch (error) {
+    res.status(500).json({
+      err: "Algo salió terriblemente mal, estamos trabajando en ello",
+      description: error,
+    });
+  }
+};
+
+const addtohistorial = async (req, res) => {
+  let { userId, productId } = req.body;
+  try {
+    const historial = await Historial.findOne({
+      where: {
+        userId,
+      },
+      include: Product,
+    });
+
+    const producto = await Product.findOne({
+      where: {
+        id: productId,
+      },
+    });
+
+    await historial.createtohistorial(producto);
+
+    res.status(200).json({
+      msg: "Articulo agregado al historial correctamente)",
+    });
+  } catch (error) {
+    res.status(500).json({
+      err: "Algo salió terriblemente mal, estamos trabajando en ello",
+      description: error,
+    });
+  }
+};
+
+const crearhistorial = async (req, res) => {
+  const {
+    userId,
+    preference_id,
+    status,
+    collection_id,
+    collection_status,
+    payment_type,
+    merchant_order_id,
+  } = req.body;
+  try {
+    const usuario = await User.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    const creado = await Compra.findOne({
+      where: {
+        collectionid: collection_id,
+      },
+    });
+
+    if (!creado && preference_id && collection_id) {
+      const compra = await usuario.createCompra({
+        preferenceid: preference_id,
+        collectionid: collection_id,
+        merchantorderid: merchant_order_id,
+        status: status,
+        paymenttype: payment_type,
+        collectionstatus: collection_status,
+      });
+
+      res.status(200).json(
+        {
+          msg: "Articulo creado exitosamente en database al historial correctamente, ¡Genial! ¡Más consumismo!",
+        },
+        { compra: compra }
+      );
+    }
+
+    res
+      .status(200)
+      .json({ msg: "Articulo ya existe en database al historial" });
   } catch (error) {
     res.status(500).json({
       err: "Algo salió terriblemente mal, estamos trabajando en ello",
@@ -85,36 +166,101 @@ const removeFromCart = async (req, res) => {
 
 const buyproduct = async (req, res) => {
   const { id } = req.params;
-  const { quantity } = req.body;
+  const {
+    quantity,
+    userId,
+    Apellido,
+    Barrio,
+
+    Ciudad,
+    Estado,
+    Nombre,
+    Pais,
+    Prefijo,
+    Telefono,
+    calle1,
+    calle2,
+    zipcode,
+    tipoCalle,
+    numerocalle,
+  } = req.body;
 
   try {
-    const product = await Product.findByPk(id);
+    const product = await Product.findByPk(id, { include: { all: true } });
     if (product.length === 0) {
       return res.status(404).json({
         msg: "No se encontró el producto que estas buscando... seguramente era una capa",
       });
     }
 
+    const user = await User.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    product.stock = product.stock - quantity
+    await product.save()
+    const queryCart = await Cart.findOne({
+      where: {
+        userId: userId
+      },
+      include: Product
+    })
+
+    queryCart.removeProduct(product);
+
     let preference = {
+      payer: {
+        phone: {
+          area_code: Prefijo,
+          number: parseInt(Telefono),
+        },
+        address: {
+          zip_code: zipcode,
+          street_name: tipoCalle,
+          street_number: parseInt(numerocalle),
+        },
+        email: user.email,
+
+        name: user.username,
+        surname: Apellido,
+      },
+      shipments: {
+        receiver_address: {
+          zip_code: zipcode, //string
+          street_name: tipoCalle, //string
+          street_number: parseInt(numerocalle),
+          floor: `${calle1}-${calle2}`, //string
+          apartment: `${calle1}-${calle2}`, //string
+          city_name: Ciudad, //string
+          state_name: `${Estado}-${Barrio}`, //string
+          country_name: Pais, //string
+        },
+      },
+
       items: [
         {
           id: product.id,
           title: product.name,
           unit_price: product.unitPrice,
-          quantity: quantity,
+          quantity: parseInt(quantity),
+          picture_url: product.photos[0].url,
         },
       ],
-      back_urls: {
-        success: `https://tpfront-production.up.railway.app/ipayments/${id}`,
-        failure: "https://tpfront-production.up.railway.app/paymentsfail",
-        pending: "https://tpfront-production.up.railway.app/paymentspending",
-      },
 
-      notification_url: `https://tpfback-production.up.railway.app/store/payments?source_news=webhooks`,
+      back_urls: {
+        success: `https://h-couture-odxfhjkfia-uc.a.run.app/ItemPayments/${userId}`,
+        failure: `https://h-couture-odxfhjkfia-uc.a.run.app/paymentsfail/${userId}`,
+        pending: `https://h-couture-odxfhjkfia-uc.a.run.app/paymentspending/${userId}`,
+      },
+      auto_return: "approved",
+      // notification_url: `http://localhost:3001/store/payments/`,
+      external_reference: "H-COMERSEHENRY",
     };
 
-    mercadopago.preferences.create(preference).then(function (response) {
-      res.status(200).json(response.body.init_point);
+    mercadopago.preferences.create(preference).then(async function (response) {
+      res.status(200).json(response.body);
     });
   } catch (error) {
     res.status(500).json({
@@ -126,28 +272,59 @@ const buyproduct = async (req, res) => {
 
 const getpayinfo = async (req, res) => {
   try {
-    console.log(req.body);
     res.status(200).json(req.body);
+
+    // await Compra.findOrCreate({
+
+    // })
   } catch (error) {
     res.status(500).json({
-      err: `Algo salio mal en el envio de datos de pago datos `,
+      err: "Algo salió terriblemente mal, estamos trabajando en ello",
+      description: error,
+    });
+  }
+};
+
+const getuserpay = async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const usuario = await User.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    const data = await usuario.getCompras();
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({
+      err: "Algo salió terriblemente mal, estamos trabajando en ello",
       description: error,
     });
   }
 };
 
 const buyall = async (req, res) => {
-  let { userId } = req.body;
+  const {
+    Cartitems,
+    userId,
+    Apellido,
+    Barrio,
+    Ciudad,
+    Estado,
+    Nombre,
+    Pais,
+    Prefijo,
+    Telefono,
+    calle1,
+    calle2,
+    zipcode,
+    tipoCalle,
+    numerocalle,
+  } = req.body;
 
   try {
-    const userCart = await Cart.findOne({
-      where: {
-        userId: userId,
-      },
-      include: Product,
-    });
-    const cart = userCart.products;
-
     const user = await User.findOne({
       where: {
         id: userId,
@@ -159,29 +336,66 @@ const buyall = async (req, res) => {
       items: [],
 
       payer: {
+        phone: {
+          area_code: Prefijo,
+          number: parseInt(Telefono),
+        },
+        address: {
+          zip_code: zipcode,
+          street_name: tipoCalle,
+          street_number: parseInt(numerocalle),
+        },
         email: user.email,
+
         name: user.username,
+        surname: Apellido,
+      },
+      shipments: {
+        receiver_address: {
+          zip_code: zipcode, //string
+          street_name: tipoCalle, //string
+
+          street_number: parseInt(numerocalle),
+
+          state_name: `${Estado}-${Barrio}`, //string
+          apartment: `${calle1}-${calle2}`, //string
+          city_name: Ciudad, //string
+
+          country_name: Pais, //string
+        },
       },
       back_urls: {
-        success: `https://tpfront-production.up.railway.app/payments/${id}`,
-        failure: "https://tpfront-production.up.railway.app/paymentsfail",
-        pending: "https://tpfront-production.up.railway.app/paymentspending",
+        success: `https://h-couture-odxfhjkfia-uc.a.run.app/CartPayments/${userId}`,
+        failure: `https://h-couture-odxfhjkfia-uc.a.run.app/paymentsfail/${userId}`,
+        pending: `https://h-couture-odxfhjkfia-uc.a.run.app/paymentspending/${userId}`,
       },
-
-      notification_url: `https://tpfback-production.up.railway.app/store/payments?source_news=webhooks`,
+      auto_return: "approved",
+      // notification_url: `http://localhost:3001/store/payments`,
+      external_reference: "H-COMERSEHENRY",
     };
 
-    for (let e of cart) {
+    for (let e of Cartitems) {
       preference.items.push({
         id: e.id,
         title: e.name,
         unit_price: e.unitPrice,
         quantity: parseInt(e.quantity),
+        picture_url: e.photos[0].url,
       });
     }
 
+      Cartitems.forEach( async product => {
+          const queryProduct = await Product.findOne({
+              where: {
+                  id: product.id
+              }
+          })
+          queryProduct.stock = queryProduct.stock - product.quantity
+          await queryProduct.save()
+      })
+
     mercadopago.preferences.create(preference).then(function (response) {
-      res.status(200).json(response.body.init_point);
+      res.status(200).json(response.body);
     });
   } catch (error) {
     res.status(500).json({
@@ -222,4 +436,7 @@ module.exports = {
   buyproduct,
   buyall,
   getpayinfo,
+  crearhistorial,
+  getuserpay,
+  addtohistorial,
 };

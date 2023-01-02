@@ -1,4 +1,4 @@
-const { Product } = require('../db')
+const { Product, User} = require('../db')
 
 
 async function toggleProductAsFeatured(req, res)
@@ -85,6 +85,7 @@ async function toggleAdmin(req, res)
         }))
     } catch (error)
     {
+        console.log(error)
         res.status(500).json({
             err: 'Algo salió terriblemente mal, estamos trabajando en ello',
             description: error

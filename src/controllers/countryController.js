@@ -11,7 +11,7 @@ const getCountries = async (req, res) =>
             return res.status(404, countries);
     } catch (error)
     {
-        console.log(error);
+        
         return res.status(500).json({
             err: 'Algo salió terriblemente mal, estamos trabajando en ello',
             description: error
@@ -43,7 +43,7 @@ const addCountry = async (req, res) =>
     catch (error)
     {
         await transaction.rollback();
-        console.log(error);
+       
         res.status(500).json({
             err: 'Algo salió terriblemente mal, estamos trabajando en ello',
             description: error
